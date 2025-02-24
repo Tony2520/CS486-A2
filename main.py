@@ -38,11 +38,11 @@ def loadData(data_file, label_file):
     return res
 
 
-def entropy(dataSet):
+def entropy(data, dataSet):
     if not dataSet:
         return 1
 
-    probA = Counter(d[1] for d in dataSet)[1] / len(dataSet)
+    probA = Counter(data[d][1] for d in dataSet)[1] / len(dataSet)
     probB = 1 - probA
 
     eA = -1 * probA * (0 if probA == 0 else math.log2(probA))
@@ -51,11 +51,11 @@ def entropy(dataSet):
     return eA + eB
 
 
-def gain(dataSet, feature, v=1):
+def gain(data, dataSet, feature, v=1):
     if not dataSet:
         return 0
-    t = entropy([d for d in dataSet if feature in d[0]])
-    f = entropy([d for d in dataSet if feature not in d[0]])
+    t = entropy(data, [d for d in dataSet if feature in data[d][0]])
+    f = entropy(data, [d for d in dataSet if feature not in data[d][0]])
 
     g = 0
 
@@ -63,7 +63,7 @@ def gain(dataSet, feature, v=1):
         n1, n2, total = 0, 0, 0
         for d in dataSet:
             total += 1
-            if feature in d[0]:
+            if feature in data[d][0]:
                 n1 += 1
             else:
                 n2 += 1
@@ -77,17 +77,18 @@ def gain(dataSet, feature, v=1):
 
 
 class Node:
-    def __init__(self, data, version=1, existingFeatures=set()):
+    def __init__(self, data, dataSet, version=1, existingFeatures=set()):
         self.data = data
+        self.dataSet = dataSet
         self.left = None  # True
         self.right = None  # False
-        self.entropy = entropy(data)
+        self.entropy = entropy(data, dataSet)
         self.version = version
         self.existingFeatures = existingFeatures
         self.targetFeature, self.maxGain = self.findTargetFeature()
 
     def getPointEstimate(self):
-        return Counter(d[1] for d in self.data).most_common(1)[0][0]
+        return Counter(self.data[d][1] for d in self.dataSet).most_common(1)[0][0]
 
     def findTargetFeature(self):
         maxGain = 0
@@ -95,7 +96,7 @@ class Node:
         for i, w in enumerate(WORDS):
             if i in self.existingFeatures:
                 continue
-            g = gain(self.data, i, self.version)
+            g = gain(self.data, self.dataSet, i, self.version)
             e = self.entropy - g
             if e > maxGain:
                 maxGain = e
@@ -104,15 +105,19 @@ class Node:
         return targetFeature, maxGain
 
     def split(self):
-        leftData = [d for d in self.data if self.targetFeature in d[0]]
-        rightData = [d for d in self.data if self.targetFeature not in d[0]]
+        leftData = [d for d in self.dataSet if self.targetFeature in self.data[d][0]]
+        rightData = [
+            d for d in self.dataSet if self.targetFeature not in self.data[d][0]
+        ]
 
         newLeft = Node(
+            self.data,
             leftData,
             self.version,
             self.existingFeatures | {self.targetFeature},
         )
         newRight = Node(
+            self.data,
             rightData,
             self.version,
             self.existingFeatures | {self.targetFeature},
@@ -145,7 +150,7 @@ class Node:
 
 def buildDecisionTree(trainData, maxNodes=100, version=1):
     pq = PriorityQueue()
-    root = Node(trainData, version)
+    root = Node(trainData, [i for i in range(len(trainData))], version)
     pq.put((-root.maxGain, root))
 
     count = 0
