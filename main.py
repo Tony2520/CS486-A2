@@ -138,7 +138,7 @@ class Node:
         if self.targetFeature:
             print(
                 " " * 4 * level
-                + f"{WORDS[self.targetFeature - 1]}: I(E) = {self.maxGain}"
+                + f"{WORDS[self.targetFeature - 1]}: Information Gain = {self.maxGain}"
             )
         if self.left:
             print(" " * 4 * level + "  " + "True:")
@@ -226,6 +226,17 @@ def main():
     trainData = loadData("trainData.txt", "trainLabel.txt")
     testData = loadData("testData.txt", "testLabel.txt")
 
+    # part 2
+    # weightedTree, weightedTrainAcc, weightedTestAcc = buildDecisionTree(
+    #     trainData, testData, 10, 1
+    # )
+    # avgTree, avgTrainAcc, avgTestAcc = buildDecisionTree(trainData, testData, 10, 2)
+    # print("Weighted Tree:")
+    # weightedTree.printTree()
+    # print("\nAverage Tree:")
+    # avgTree.printTree()
+
+    # part 3
     # Build trees and get accuracies
     weightedTree, weightedTrainAcc, weightedTestAcc = buildDecisionTree(
         trainData, testData, 100, 1

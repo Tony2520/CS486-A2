@@ -1,0 +1,85 @@
+Weighted Tree:
+book: Information Gain = 0.07701870448051018
+  True:
+    bible: Information Gain = 0.1153579525217801
+      True:
+        Point Estimate: 1
+      False:
+        call: Information Gain = 0.06945862991358606
+          True:
+            Point Estimate: 1
+          False:
+            sent: Information Gain = 0.08422407621310757
+              True:
+                Point Estimate: 1
+              False:
+                controlling: Information Gain = 0.058758157105190834
+                  True:
+                    Point Estimate: 1
+                  False:
+                    Point Estimate: 2
+  False:
+    books: Information Gain = 0.059926184812467365
+      True:
+        sure: Information Gain = 0.0976949604997708
+          True:
+            soon: Information Gain = 0.9182958340544896
+              True:
+                Point Estimate: 2
+              False:
+                Point Estimate: 1
+          False:
+            spirit: Information Gain = 0.09694460606247315
+              True:
+                Point Estimate: 1
+              False:
+                Point Estimate: 2
+      False:
+        religion: Information Gain = 0.03567340704855948
+          True:
+            Point Estimate: 1
+          False:
+            Point Estimate: 1
+
+Average Tree:
+christian: Information Gain = 0.5002058812081454
+  True:
+    Point Estimate: 1
+  False:
+    atheism: Information Gain = 0.5001930379077578
+      True:
+        Point Estimate: 1
+      False:
+        christians: Information Gain = 0.4998761311331796
+          True:
+            Point Estimate: 1
+          False:
+            beliefs: Information Gain = 0.4995539340278007
+              True:
+                Point Estimate: 1
+              False:
+                atheists: Information Gain = 0.49876616865890055
+                  True:
+                    Point Estimate: 1
+                  False:
+                    brain: Information Gain = 0.4982474613834379
+                      True:
+                        Point Estimate: 1
+                      False:
+                        aa: Information Gain = 0.4976745554887391
+                          True:
+                            Point Estimate: 1
+                          False:
+                            murder: Information Gain = 0.49734487550604267
+                              True:
+                                Point Estimate: 1
+                              False:
+                                proof: Information Gain = 0.4969295610415432
+                                  True:
+                                    Point Estimate: 1
+                                  False:
+                                    logic: Information Gain = 0.49660083443000047
+                                      True:
+                                        Point Estimate: 1
+                                      False:
+                                        Point Estimate: 2
