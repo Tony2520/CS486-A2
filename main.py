@@ -38,7 +38,7 @@ def loadData(data_file, label_file):
     return res
 
 
-def entropy(data, dataSet):
+def calculateEntropy(data, dataSet):
     if not dataSet:
         return 1
 
@@ -51,11 +51,11 @@ def entropy(data, dataSet):
     return eA + eB
 
 
-def gain(data, dataSet, feature, v=1):
+def calculateGain(data, dataSet, feature, v=1):
     if not dataSet:
         return 0
-    t = entropy(data, [d for d in dataSet if feature in data[d][0]])
-    f = entropy(data, [d for d in dataSet if feature not in data[d][0]])
+    t = calculateEntropy(data, [d for d in dataSet if feature in data[d][0]])
+    f = calculateEntropy(data, [d for d in dataSet if feature not in data[d][0]])
 
     g = 0
 
@@ -82,7 +82,7 @@ class Node:
         self.dataSet = dataSet
         self.left = None  # True
         self.right = None  # False
-        self.entropy = entropy(data, dataSet)
+        self.entropy = calculateEntropy(data, dataSet)
         self.version = version
         self.existingFeatures = existingFeatures
         self.targetFeature, self.maxGain = self.findTargetFeature()
@@ -96,7 +96,7 @@ class Node:
         for i, w in enumerate(WORDS):
             if i in self.existingFeatures:
                 continue
-            g = gain(self.data, self.dataSet, i, self.version)
+            g = calculateGain(self.data, self.dataSet, i, self.version)
             e = self.entropy - g
             if e > maxGain:
                 maxGain = e
@@ -148,19 +148,19 @@ class Node:
             self.right.printTree(level + 1)
 
 
-def predict(node, example):
+def predictExample(node, example):
     if not node.left and not node.right:
         return node.getPointEstimate()
 
     if node.targetFeature in example[0]:
-        return predict(node.left, example)
-    return predict(node.right, example)
+        return predictExample(node.left, example)
+    return predictExample(node.right, example)
 
 
-def calculate_accuracy(root, data):
+def calculateAccuracy(root, data):
     correct = 0
     for example in data:
-        prediction = predict(root, example)
+        prediction = predictExample(root, example)
         if prediction == example[1]:
             correct += 1
     return (correct / len(data)) * 100
@@ -171,9 +171,8 @@ def buildDecisionTree(trainData, testData, maxNodes=100, version=1):
     root = Node(trainData, [i for i in range(len(trainData))], version)
     pq.put((-root.maxGain, root))
 
-    # Track accuracies
-    train_accuracies = []
-    test_accuracies = []
+    trainAccuracies = []
+    testAccuracies = []
 
     count = 0
     while not pq.empty() and count < maxNodes:
@@ -185,35 +184,34 @@ def buildDecisionTree(trainData, testData, maxNodes=100, version=1):
 
         count += 1
 
-        # Calculate and store accuracies after each node
-        train_acc = calculate_accuracy(root, trainData)
-        test_acc = calculate_accuracy(root, testData)
-        train_accuracies.append(train_acc)
-        test_accuracies.append(test_acc)
+        trainAcc = calculateAccuracy(root, trainData)
+        testAcc = calculateAccuracy(root, testData)
+        trainAccuracies.append(trainAcc)
+        testAccuracies.append(testAcc)
 
-    return root, train_accuracies, test_accuracies
+    return root, trainAccuracies, testAccuracies
 
 
-def plot_accuracies(train_acc1, test_acc1, train_acc2, test_acc2):
-    nodes = range(1, len(train_acc1) + 1)
+def plotAccuracies(trainAcc1, testAcc1, trainAcc2, testAcc2):
+    nodes = range(1, len(trainAcc1) + 1)
 
     # Create two subplots
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
 
     # Plot weighted version (v=1)
-    ax1.plot(nodes, train_acc1, label="Training Accuracy", color="blue")
-    ax1.plot(nodes, test_acc1, label="Testing Accuracy", color="red")
-    ax1.set_title("Weighted Feature Selection")
-    ax1.set_xlabel("Number of Nodes")
+    ax1.plot(nodes, trainAcc1, label="Training Accuracy", color="blue")
+    ax1.plot(nodes, testAcc1, label="Testing Accuracy", color="red")
+    ax1.set_title("Weighted Information Gain")
+    ax1.set_xlabel("# of Internal Nodes")
     ax1.set_ylabel("Accuracy (%)")
     ax1.legend()
     ax1.grid(True)
 
     # Plot average version (v=2)
-    ax2.plot(nodes, train_acc2, label="Training Accuracy", color="blue")
-    ax2.plot(nodes, test_acc2, label="Testing Accuracy", color="red")
-    ax2.set_title("Average Feature Selection")
-    ax2.set_xlabel("Number of Nodes")
+    ax2.plot(nodes, trainAcc2, label="Training Accuracy", color="blue")
+    ax2.plot(nodes, testAcc2, label="Testing Accuracy", color="red")
+    ax2.set_title("Average Information Gain")
+    ax2.set_xlabel("# of Internal Nodes")
     ax2.set_ylabel("Accuracy (%)")
     ax2.legend()
     ax2.grid(True)
@@ -229,15 +227,13 @@ def main():
     testData = loadData("testData.txt", "testLabel.txt")
 
     # Build trees and get accuracies
-    weighted_tree, weighted_train_acc, weighted_test_acc = buildDecisionTree(
+    weightedTree, weightedTrainAcc, weightedTestAcc = buildDecisionTree(
         trainData, testData, 100, 1
     )
-    avg_tree, avg_train_acc, avg_test_acc = buildDecisionTree(
-        trainData, testData, 100, 2
-    )
+    avgTree, avgTrainAcc, avgTestAcc = buildDecisionTree(trainData, testData, 100, 2)
 
     # Plot results
-    plot_accuracies(weighted_train_acc, weighted_test_acc, avg_train_acc, avg_test_acc)
+    plotAccuracies(weightedTrainAcc, weightedTestAcc, avgTrainAcc, avgTestAcc)
 
     print("Plots have been saved to 'accuracy_plots.png'")
 
